@@ -22,9 +22,16 @@ const sketch = (p: p5) => {
     }
     public draw(millis: number) {
       const score = 1.0 - (millis - this.created) / this.live;
+      const noiseX = p.noise(this.x + millis / 100.0) - 0.5;
+      const noiseY = p.noise(this.y + millis / 100.0) - 0.5;
       p.stroke(0, 0, 0, score);
       p.fill(this.color);
-      p.ellipse(this.x, this.y, this.size * score, this.size * score);
+      p.ellipse(
+        this.x + noiseX * this.size * (1.0 - score),
+        this.y + noiseY * this.size * (1.0 - score),
+        this.size * score,
+        this.size * score
+      );
     }
   }
 
