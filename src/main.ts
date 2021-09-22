@@ -1,3 +1,5 @@
+import "./globals";
+import "p5/lib/addons/p5.sound";
 import p5 from "p5";
 
 const sketch = (p: p5) => {
@@ -36,6 +38,10 @@ const sketch = (p: p5) => {
   }
 
   let circles: Circle[] = [];
+  let playing: boolean;
+  const osc = new p5.Oscillator();
+  osc.setType("triangle");
+  const envelope = new p5.Envelope();
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
@@ -43,12 +49,27 @@ const sketch = (p: p5) => {
   p.draw = () => {
     const now = p.millis();
     circles = circles.filter((circle) => circle.isLive(now));
+    if (circles.length == 0) {
+      osc.stop(0);
+      playing = false;
+    } else {
+      osc.amp(p.constrain(circles.length / 500, 0, 1));
+      osc.freq(circles.length + 300);
+    }
     p.background(0, 0, 0);
     circles.forEach((circle) => circle.draw(now));
   };
   p.touchMoved = () => {
+    if (!playing) {
+      playing = true;
+      osc.start();
+      envelope.play(osc);
+    }
     circles.push(new Circle(p.mouseX, p.mouseY));
     return false;
+  };
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 };
 
