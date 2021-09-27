@@ -44,6 +44,7 @@ const sketch = (p: p5) => {
   const envelope = new p5.Envelope();
 
   p.setup = () => {
+    p.getAudioContext().suspend();
     p.createCanvas(p.windowWidth, p.windowHeight);
   };
   p.draw = () => {
@@ -58,6 +59,9 @@ const sketch = (p: p5) => {
     }
     p.background(0, 0, 0);
     circles.forEach((circle) => circle.draw(now));
+  };
+  p.touchStarted = () => {
+    p.userStartAudio();
   };
   p.touchMoved = () => {
     if (!playing) {
