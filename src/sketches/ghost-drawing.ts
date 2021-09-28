@@ -2,6 +2,12 @@ import "./globals";
 import "p5/lib/addons/p5.sound";
 import p5 from "p5";
 
+declare module "p5" {
+  interface p5InstanceExtensions {
+    userStartAudio(): Promise<void>;
+  }
+}
+
 const sketch = (p: p5) => {
   class Circle {
     private x: number;
@@ -44,7 +50,6 @@ const sketch = (p: p5) => {
   const envelope = new p5.Envelope();
 
   p.setup = () => {
-    p.getAudioContext().suspend();
     p.createCanvas(p.windowWidth, p.windowHeight);
   };
   p.draw = () => {
