@@ -1,11 +1,12 @@
 import dynamic from "next/dynamic";
 
-const GhostDrawingWithNoSSR = dynamic(
-  () => import("../../src/components/ghost-drawing"),
-  { ssr: false }
-);
+import sketch from "../../src/sketches/ghost-drawing";
+
+const P5Wrapper = dynamic(import("../../src/components/p5-wrapper"), {
+  ssr: false,
+});
 
 const GhostDrawing = () => {
-  return <GhostDrawingWithNoSSR />;
+  return <P5Wrapper sketch={sketch} />;
 };
 export default GhostDrawing;
