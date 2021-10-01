@@ -49,6 +49,7 @@ const sketch = (p: p5) => {
       p.stroke(p.lerpColor(c0, c1, p.map(i, 0, p.windowHeight, 0, 1)));
       p.line(0, i, p.windowWidth, i);
     });
+    // bubbles
     bubbles.forEach((bubble: Bubble) => {
       bubble.move();
       bubble.draw();
