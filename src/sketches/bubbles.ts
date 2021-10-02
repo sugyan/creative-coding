@@ -2,7 +2,7 @@ import p5 from "p5";
 
 const sketch = (p: p5) => {
   class Bubble {
-    private baseX: number;
+    private readonly baseX: number;
     private x: number;
     private y: number;
     private radius: number;
@@ -20,16 +20,22 @@ const sketch = (p: p5) => {
     }
     public draw() {
       const millis = p.millis();
-      const noiseX = p.noise(this.radius + millis / 300.0);
-      const noiseY = p.noise(this.radius + millis / 300.0 + 1);
+      const noiseX = p.noise(this.baseX + millis / 300.0 + 0);
+      const noiseY = p.noise(this.baseX + millis / 300.0 + 1);
+      const noiseA = p.noise(this.baseX + millis / 300.0 + 2);
       p.stroke(0xb0, 0xb0, 0xb0);
       p.fill(0xff, 0xff, 0xff, 0x40);
+
+      p.push();
+      p.translate(this.x, this.y);
+      p.rotate((noiseA * 2 - 1.0) * p.PI);
       p.ellipse(
-        this.x,
-        this.y,
-        this.radius * (1 + 0.1 * (noiseX - 0.5)),
-        this.radius * (1 + 0.1 * (noiseY - 0.5))
+        0,
+        0,
+        this.radius * (1 + 0.2 * (noiseX - 0.5)),
+        this.radius * (1 + 0.2 * (noiseY - 0.5))
       );
+      p.pop();
     }
     public isLive(): boolean {
       return this.y + this.radius >= 0;
