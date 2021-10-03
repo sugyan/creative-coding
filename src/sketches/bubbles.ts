@@ -28,6 +28,8 @@ const sketch = (p: p5) => {
 
       p.push();
       p.translate(this.x, this.y);
+      // body
+      p.push();
       p.rotate((noiseA * 2 - 1.0) * p.PI);
       p.ellipse(
         0,
@@ -35,6 +37,20 @@ const sketch = (p: p5) => {
         this.radius * (1 + 0.2 * (noiseX - 0.5)),
         this.radius * (1 + 0.2 * (noiseY - 0.5))
       );
+      p.pop();
+      // reflection of light
+      p.translate(-this.radius * 0.225, -this.radius * 0.225);
+      p.rotate((noiseA * 2 - 1.0) * p.PI);
+      p.noStroke();
+      Array.from(Array(5).keys()).forEach((i) => {
+        p.fill(0xff, 0xff, 0xff, 0x3f + 0xc0 * (1 / 10) * i);
+        p.ellipse(
+          0,
+          0,
+          this.radius * (0.2 - 0.2 * (1 / 10) * i + 0.075 * (noiseX - 0.5)),
+          this.radius * (0.2 - 0.2 * (1 / 10) * i + 0.075 * (noiseY - 0.5))
+        );
+      });
       p.pop();
     }
     public isLive(): boolean {
