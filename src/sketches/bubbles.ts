@@ -10,6 +10,7 @@ const sketch = (p: p5) => {
     private dy: number;
     private readonly ddy: number;
     private radius: number;
+    private readonly c: number;
     public constructor() {
       const [h, w] = [p.windowHeight, p.windowWidth];
       this.created = p.millis();
@@ -24,6 +25,7 @@ const sketch = (p: p5) => {
       this.dx = (p.cos(angle) * hypot) / 300;
       this.dy = (p.sin(angle) * hypot) / 300;
       this.ddy = this.dx / 1000;
+      this.c = p.random() * 360;
     }
     public move() {
       this.t++;
@@ -38,14 +40,32 @@ const sketch = (p: p5) => {
       const noiseX = p.noise(this.created + 0 + millis / 300);
       const noiseY = p.noise(this.created + 1 + millis / 300);
       const noiseA = p.noise(this.created + 2 + millis / 300);
-      p.stroke(0xb0, 0xb0, 0xb0);
-      p.fill(0xff, 0xff, 0xff, 0x60);
 
       p.push();
       p.translate(this.x, this.y);
       // body
       p.push();
       p.rotate((noiseA * 2 - 1) * p.PI);
+      const weight = this.radius / 25;
+      p.fill(0xff, 0xff, 0xff, 0x10);
+      p.strokeWeight(weight);
+      for (let i = 0; i <= 10; i++) {
+        const n = p.noise(millis / 2000);
+        const hue = (this.c + (n - 0.5) * 360 + i * 10 + 360) % 360;
+        const color = p
+          .colorMode(p.HSB)
+          .color(hue, 100, 100, 0.3 - i / 25)
+          .toString();
+        p.stroke(color);
+        p.ellipse(
+          0,
+          0,
+          this.radius * (1 + 0.3 * (noiseX - 0.5)) - i * weight * 2,
+          this.radius * (1 + 0.3 * (noiseY - 0.5)) - i * weight * 2
+        );
+      }
+      p.strokeWeight(1);
+      p.stroke(0xc0, 0xc0, 0xc0, 0.5);
       p.ellipse(
         0,
         0,
@@ -57,7 +77,7 @@ const sketch = (p: p5) => {
       p.translate(-this.radius * 0.2, -this.radius * 0.2);
       p.rotate((p.PI / 4) * (0.5 + noiseA));
       p.noStroke();
-      Array.from(Array(5).keys()).forEach((i) => {
+      for (let i = 0; i < 5; i++) {
         p.fill(0xff, 0xff, 0xff, 0x3f + 0xc0 * (1 / 10) * i);
         p.ellipse(
           0,
@@ -65,7 +85,7 @@ const sketch = (p: p5) => {
           this.radius * (0.2 - 0.2 * (1 / 10) * i + 0.1 * (noiseX - 0.5)),
           this.radius * (0.3 - 0.3 * (1 / 10) * i + 0.1 * (noiseY - 0.5))
         );
-      });
+      }
       p.pop();
     }
     public isLive(): boolean {
@@ -80,12 +100,13 @@ const sketch = (p: p5) => {
   };
   p.draw = () => {
     // background
+    const h = p.windowHeight;
     const c0 = p.color(0x00, 0xff, 0xff);
     const c1 = p.color(0xb0, 0xff, 0xff);
-    Array.from(Array(p.windowHeight).keys()).forEach((i) => {
+    for (let i = 0; i < h; i++) {
       p.stroke(p.lerpColor(c0, c1, p.map(i, 0, p.windowHeight, 0, 1)));
       p.line(0, i, p.windowWidth, i);
-    });
+    }
     // bubbles
     bubbles.forEach((bubble: Bubble) => {
       bubble.move();
