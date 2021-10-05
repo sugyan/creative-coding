@@ -3,6 +3,7 @@ import p5 from "p5";
 const sketch = (p: p5) => {
   class Bubble {
     public readonly created: number;
+    private t: number;
     private x: number;
     private y: number;
     private dx: number;
@@ -12,23 +13,25 @@ const sketch = (p: p5) => {
     public constructor() {
       const [h, w] = [p.windowHeight, p.windowWidth];
       this.created = p.millis();
+      this.t = 0;
       const radiusMin = p.max(h, w) * (1 / 10 - 1 / 40);
       const radiusMax = p.max(h, w) * (1 / 10 + 1 / 40);
       this.radius = p.random(radiusMin, radiusMax);
       this.x = 0;
       this.y = h;
-      const angle = p.random(0, (p.PI / 2) * 0.9);
+      const angle = (p.PI / 2) * (p.random() * 0.9) ** 1.5;
       const hypot = p.sqrt(h * h + w * w);
       this.dx = (p.cos(angle) * hypot) / 300;
       this.dy = (p.sin(angle) * hypot) / 300;
       this.ddy = this.dx / 1000;
     }
     public move() {
-      const noise = p.noise(this.created + p.millis());
-      this.x += this.dx;
-      this.y -= this.dy;
-      this.dx += noise / 1000;
-      this.dy += this.ddy + noise / 1000;
+      this.t++;
+      const h = p.windowHeight;
+      const noise = p.noise(this.created + p.millis() / 1000);
+      this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.radius) / 5;
+      this.y = h - this.dy * this.t + ((noise - 0.5) * this.radius) / 5;
+      this.dy += this.ddy;
     }
     public draw() {
       const millis = p.millis();
@@ -95,6 +98,9 @@ const sketch = (p: p5) => {
         bubbles.push(new Bubble());
       }
     }
+  };
+  p.touchMoved = () => {
+    return false;
   };
   p.windowResized = () => {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
