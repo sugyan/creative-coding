@@ -10,7 +10,6 @@ const sketch = (p: p5) => {
     private dy: number;
     private readonly ddy: number;
     private radius: number;
-    private readonly c: number;
     public constructor() {
       const [h, w] = [p.windowHeight, p.windowWidth];
       this.created = p.millis();
@@ -25,7 +24,6 @@ const sketch = (p: p5) => {
       this.dx = (p.cos(angle) * hypot) / 300;
       this.dy = (p.sin(angle) * hypot) / 300;
       this.ddy = this.dx / 1000;
-      this.c = p.random() * 360;
     }
     public move() {
       this.t++;
@@ -49,12 +47,12 @@ const sketch = (p: p5) => {
       const weight = this.radius / 25;
       p.fill(0xff, 0xff, 0xff, 0x10);
       p.strokeWeight(weight);
-      for (let i = 0; i <= 10; i++) {
-        const n = p.noise(millis / 2000);
-        const hue = (this.c + (n - 0.5) * 360 + i * 10 + 360) % 360;
+      for (let i = 0; i <= 15; i++) {
+        const n = p.noise(this.t / 300, this.radius + i / 50);
+        const hue = (n * 480 + 300) % 360;
         const color = p
           .colorMode(p.HSB)
-          .color(hue, 100, 100, 0.3 - i / 25)
+          .color(hue, 100, 100, 0.2 - i / 30)
           .toString();
         p.stroke(color);
         p.ellipse(
@@ -65,7 +63,7 @@ const sketch = (p: p5) => {
         );
       }
       p.strokeWeight(1);
-      p.stroke(0xc0, 0xc0, 0xc0, 0.5);
+      p.stroke(0xe0, 0xe0, 0xe0, 0.2);
       p.ellipse(
         0,
         0,
