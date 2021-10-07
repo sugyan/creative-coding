@@ -23,7 +23,7 @@ const sketch = (p: p5) => {
       const hypot = p.sqrt(h * h + w * w);
       this.dx = (p.cos(angle) * hypot) / 300;
       this.dy = (p.sin(angle) * hypot) / 300;
-      this.ddy = this.dx / 1000;
+      this.ddy = (this.dx / w) * 2;
     }
     public move() {
       this.t++;
@@ -31,7 +31,7 @@ const sketch = (p: p5) => {
       const noise = p.noise(this.created + p.millis() / 1000);
       this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.radius) / 5;
       this.y = h - this.dy * this.t + ((noise - 0.5) * this.radius) / 5;
-      this.dy += this.ddy;
+      this.y -= (this.ddy * this.t * this.t) / 2;
     }
     public draw() {
       const millis = p.millis();
@@ -101,7 +101,7 @@ const sketch = (p: p5) => {
     const h = p.windowHeight;
     const c0 = p.color(0x00, 0xff, 0xff);
     const c1 = p.color(0xb0, 0xff, 0xff);
-    for (let i = 0; i < h; i++) {
+    for (let i = 0; i <= h; i++) {
       p.stroke(p.lerpColor(c0, c1, p.map(i, 0, p.windowHeight, 0, 1)));
       p.line(0, i, p.windowWidth, i);
     }
