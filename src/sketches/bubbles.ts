@@ -3,20 +3,20 @@ import p5 from "p5";
 const sketch = (p: p5) => {
   class Bubble {
     public readonly created: number;
-    private t: number;
-    private x: number;
-    private y: number;
+    public x: number;
+    public y: number;
+    public size: number;
+    public broken?: number;
+    private t = 0;
     private dx: number;
     private dy: number;
     private readonly ddy: number;
-    private radius: number;
     public constructor() {
       const [h, w] = [p.windowHeight, p.windowWidth];
       this.created = p.millis();
-      this.t = 0;
-      const radiusMin = p.max(h, w) * (1 / 10 - 1 / 40);
-      const radiusMax = p.max(h, w) * (1 / 10 + 1 / 40);
-      this.radius = p.random(radiusMin, radiusMax);
+      const sizeMin = p.max(h, w) * (1 / 10 - 1 / 40);
+      const sizeMax = p.max(h, w) * (1 / 10 + 1 / 40);
+      this.size = p.random(sizeMin, sizeMax);
       this.x = 0;
       this.y = h;
       const angle = (p.PI / 2) * (p.random() * 0.9) ** 1.5;
@@ -29,26 +29,32 @@ const sketch = (p: p5) => {
       this.t++;
       const h = p.windowHeight;
       const noise = p.noise(this.created + p.millis() / 1000);
-      this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.radius) / 5;
-      this.y = h - this.dy * this.t + ((noise - 0.5) * this.radius) / 5;
+      this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.size) / 5;
+      this.y = h - this.dy * this.t + ((noise - 0.5) * this.size) / 5;
       this.y -= (this.ddy * this.t * this.t) / 2;
     }
     public draw() {
+      if (this.broken) {
+        p.stroke(0xd0, 0xd0, 0xd0, 0xd0);
+        p.noFill();
+        p.ellipse(this.x, this.y, this.size, this.size);
+        return;
+      }
+
       const millis = p.millis();
       const noiseX = p.noise(this.created + 0 + millis / 300);
       const noiseY = p.noise(this.created + 1 + millis / 300);
       const noiseA = p.noise(this.created + 2 + millis / 300);
-
       p.push();
       p.translate(this.x, this.y);
       // body
       p.push();
       p.rotate((noiseA * 2 - 1) * p.PI);
-      const weight = this.radius / 25;
+      const weight = this.size / 25;
       p.fill(0xff, 0xff, 0xff, 0x10);
       p.strokeWeight(weight);
       for (let i = 0; i <= 15; i++) {
-        const n = p.noise(this.t / 300, this.radius + i / 50);
+        const n = p.noise(this.t / 300, this.size + i / 50);
         const hue = (n * 480 + 300) % 360;
         const color = p
           .colorMode(p.HSB)
@@ -58,8 +64,8 @@ const sketch = (p: p5) => {
         p.ellipse(
           0,
           0,
-          this.radius * (1 + 0.3 * (noiseX - 0.5)) - i * weight * 2,
-          this.radius * (1 + 0.3 * (noiseY - 0.5)) - i * weight * 2
+          this.size * (1 + 0.3 * (noiseX - 0.5)) - i * weight * 2,
+          this.size * (1 + 0.3 * (noiseY - 0.5)) - i * weight * 2
         );
       }
       p.strokeWeight(1);
@@ -67,12 +73,12 @@ const sketch = (p: p5) => {
       p.ellipse(
         0,
         0,
-        this.radius * (1 + 0.3 * (noiseX - 0.5)),
-        this.radius * (1 + 0.3 * (noiseY - 0.5))
+        this.size * (1 + 0.3 * (noiseX - 0.5)),
+        this.size * (1 + 0.3 * (noiseY - 0.5))
       );
       p.pop();
       // reflection of light
-      p.translate(-this.radius * 0.2, -this.radius * 0.2);
+      p.translate(-this.size * 0.2, -this.size * 0.2);
       p.rotate((p.PI / 4) * (0.5 + noiseA));
       p.noStroke();
       for (let i = 0; i < 5; i++) {
@@ -80,14 +86,18 @@ const sketch = (p: p5) => {
         p.ellipse(
           0,
           0,
-          this.radius * (0.2 - 0.2 * (1 / 10) * i + 0.1 * (noiseX - 0.5)),
-          this.radius * (0.3 - 0.3 * (1 / 10) * i + 0.1 * (noiseY - 0.5))
+          this.size * (0.2 - 0.2 * (1 / 10) * i + 0.1 * (noiseX - 0.5)),
+          this.size * (0.3 - 0.3 * (1 / 10) * i + 0.1 * (noiseY - 0.5))
         );
       }
       p.pop();
     }
     public isLive(): boolean {
-      return this.x - this.radius <= p.windowWidth && this.y + this.radius >= 0;
+      return (
+        (!this.broken || p.millis() - this.broken < 100) &&
+        this.x - this.size <= p.windowWidth &&
+        this.y + this.size >= 0
+      );
     }
   }
 
@@ -119,6 +129,12 @@ const sketch = (p: p5) => {
     }
   };
   p.touchMoved = () => {
+    const [x, y] = [p.mouseX, p.mouseY];
+    bubbles.forEach((bubble) => {
+      if (p.sqrt((bubble.x - x) ** 2 + (bubble.y - y) ** 2) < bubble.size / 2) {
+        bubble.broken = p.millis();
+      }
+    });
     return false;
   };
   p.windowResized = () => {
