@@ -27,17 +27,34 @@ const sketch = (p: p5) => {
     }
     public move() {
       this.t++;
-      const h = p.windowHeight;
-      const noise = p.noise(this.created + p.millis() / 1000);
-      this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.size) / 5;
-      this.y = h - this.dy * this.t + ((noise - 0.5) * this.size) / 5;
-      this.y -= (this.ddy * this.t * this.t) / 2;
+      if (p.mouseIsPressed || p.touches.length === 1) {
+        const [x, y] = [p.mouseX, p.mouseY];
+        if (p.sqrt((this.x - x) ** 2 + (this.y - y) ** 2) < this.size / 2) {
+          this.broken = p.millis();
+        }
+      }
+      if (!this.broken) {
+        const h = p.windowHeight;
+        const noise = p.noise(this.created + p.millis() / 1000);
+        this.x = 0 + this.dx * this.t + ((noise - 0.5) * this.size) / 5;
+        this.y = h - this.dy * this.t + ((noise - 0.5) * this.size) / 5;
+        this.y -= (this.ddy * this.t * this.t) / 2;
+      }
     }
     public draw() {
       if (this.broken) {
-        p.stroke(0xd0, 0xd0, 0xd0, 0xd0);
-        p.noFill();
-        p.ellipse(this.x, this.y, this.size, this.size);
+        const rate = 1 + (p.millis() - this.broken) / 200;
+        const n = p.noise(this.t / 300, this.size);
+        const hue = (n * 480 + 300) % 360;
+        p.strokeWeight(7);
+        for (let i = 0; i < p.max(10, this.size / 10); i++) {
+          p.stroke(p.colorMode(p.HSB).color(hue, 100, 100, 0.4 - 0.02 * i));
+          const a = p.noise(this.created + i) * 20 * p.PI;
+          p.point(
+            this.x + (this.size / 2) * p.cos(a) * rate,
+            this.y + (this.size / 2) * p.sin(a) * rate
+          );
+        }
         return;
       }
 
@@ -51,16 +68,13 @@ const sketch = (p: p5) => {
       p.push();
       p.rotate((noiseA * 2 - 1) * p.PI);
       const weight = this.size / 25;
-      p.fill(0xff, 0xff, 0xff, 0x10);
+      p.fill(p.colorMode(p.RGB).color(0xff, 0xff, 0xff, 0x10));
       p.strokeWeight(weight);
+      p.colorMode(p.HSB);
       for (let i = 0; i <= 15; i++) {
         const n = p.noise(this.t / 300, this.size + i / 50);
         const hue = (n * 480 + 300) % 360;
-        const color = p
-          .colorMode(p.HSB)
-          .color(hue, 100, 100, 0.2 - i / 30)
-          .toString();
-        p.stroke(color);
+        p.stroke(p.color(hue, 100, 100, 0.2 - i / 30));
         p.ellipse(
           0,
           0,
@@ -69,7 +83,7 @@ const sketch = (p: p5) => {
         );
       }
       p.strokeWeight(1);
-      p.stroke(0xe0, 0xe0, 0xe0, 0.2);
+      p.stroke(p.colorMode(p.RGB).color(0x80, 0x80, 0x80, 0x20));
       p.ellipse(
         0,
         0,
@@ -81,6 +95,7 @@ const sketch = (p: p5) => {
       p.translate(-this.size * 0.2, -this.size * 0.2);
       p.rotate((p.PI / 4) * (0.5 + noiseA));
       p.noStroke();
+      p.colorMode(p.RGB);
       for (let i = 0; i < 5; i++) {
         p.fill(0xff, 0xff, 0xff, 0x3f + 0xc0 * (1 / 10) * i);
         p.ellipse(
@@ -109,8 +124,8 @@ const sketch = (p: p5) => {
   p.draw = () => {
     // background
     const h = p.windowHeight;
-    const c0 = p.color(0x00, 0xff, 0xff);
-    const c1 = p.color(0xb0, 0xff, 0xff);
+    const c0 = p.colorMode(p.RGB).color(0x00, 0xff, 0xff);
+    const c1 = p.colorMode(p.RGB).color(0xb0, 0xff, 0xff);
     for (let i = 0; i <= h; i++) {
       p.stroke(p.lerpColor(c0, c1, p.map(i, 0, p.windowHeight, 0, 1)));
       p.line(0, i, p.windowWidth, i);
@@ -129,12 +144,6 @@ const sketch = (p: p5) => {
     }
   };
   p.touchMoved = () => {
-    const [x, y] = [p.mouseX, p.mouseY];
-    bubbles.forEach((bubble) => {
-      if (p.sqrt((bubble.x - x) ** 2 + (bubble.y - y) ** 2) < bubble.size / 2) {
-        bubble.broken = p.millis();
-      }
-    });
     return false;
   };
   p.windowResized = () => {
