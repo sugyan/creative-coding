@@ -116,6 +116,7 @@ const sketch = (p: p5) => {
     }
   }
 
+  let hue = p.random(0, 360);
   let bubbles: Bubble[] = [];
   let drops: Drops[] = [];
 
@@ -125,7 +126,8 @@ const sketch = (p: p5) => {
   p.draw = () => {
     const millis = p.millis();
     // background
-    p.background(p.colorMode(p.RGB).color(0x80, 0x80, 0x80));
+    hue = (hue + 0.5) % 360;
+    p.background(p.colorMode(p.HSB).color(hue, 20, 50));
     // bubbles
     bubbles = bubbles.filter((bubble: Bubble) => {
       if (!bubble.isLive()) {
