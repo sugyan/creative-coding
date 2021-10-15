@@ -14,8 +14,11 @@ const sketch = (p: p5) => {
         .colorMode(p.HSB)
         .color(p.random(0, 360), p.random(80, 100), p.random(80, 100));
     }
+    public move(x: number, y: number) {
+      this.x = x;
+      this.y = y;
+    }
     public abstract draw(): void;
-    public abstract move(x: number, y: number): void;
     public abstract isHit(x: number, y: number): boolean;
   }
 
@@ -26,10 +29,6 @@ const sketch = (p: p5) => {
     public draw() {
       p.fill(this.color);
       p.ellipse(this.x, this.y, this.size, this.size);
-    }
-    public move(x: number, y: number) {
-      this.x = x;
-      this.y = y;
     }
     public isHit(x: number, y: number): boolean {
       return (
@@ -43,29 +42,31 @@ const sketch = (p: p5) => {
       super(x, y, size * 1.2);
     }
     public draw() {
+      p.fill(this.color);
+      p.push();
+      p.translate(0, this.size / 3);
       p.beginShape();
       p.vertex(this.x, this.y - this.size);
       p.vertex(this.x + this.size / p.sqrt(3), this.y);
       p.vertex(this.x - this.size / p.sqrt(3), this.y);
       p.endShape(p.CLOSE);
-    }
-    public move(x: number, y: number) {
-      this.x = x;
-      this.y = y + this.size / 3;
+      p.pop();
     }
     public isHit(x: number, y: number): boolean {
       const dx = p.abs(this.x - x);
       const sqrt3 = p.sqrt(3);
       return (
         dx <= this.size / sqrt3 &&
-        y <= this.y &&
-        y >= this.y - (this.size / sqrt3 - dx) * sqrt3
+        y <= this.y + this.size / 3 &&
+        y >= this.y + this.size / 3 - (this.size / sqrt3 - dx) * sqrt3
       );
     }
   }
   class Heart extends Shape {
     public draw() {
       p.fill(this.color);
+      p.push();
+      p.translate(0, -this.size / 2);
       p.beginShape();
       p.vertex(this.x, this.y);
       p.bezierVertex(
@@ -85,16 +86,12 @@ const sketch = (p: p5) => {
         this.y
       );
       p.endShape(p.CLOSE);
-    }
-    public move(x: number, y: number) {
-      this.x = x;
-      this.y = y - this.size / 2;
+      p.pop();
     }
     public isHit(x: number, y: number): boolean {
       return (
         p.abs(x - this.x) <= this.size / 2 &&
-        y >= this.y &&
-        y - this.y <= this.size
+        p.abs(y - this.y + this.size / 6) <= this.size / 2
       );
     }
   }
@@ -125,10 +122,6 @@ const sketch = (p: p5) => {
       p.endShape(p.CLOSE);
       p.pop();
     }
-    public move(x: number, y: number) {
-      this.x = x;
-      this.y = y;
-    }
     public isHit(x: number, y: number): boolean {
       return (
         p.sqrt((this.x - x) * (this.x - x) + (this.y - y) * (this.y - y)) <=
@@ -137,32 +130,33 @@ const sketch = (p: p5) => {
     }
   }
 
-  let shapes: Shape[] = [
-    new Circle(
-      p.random(100, p.windowWidth - 100),
-      p.random(100, p.windowHeight - 100),
-      100
-    ),
-    new Triangle(
-      p.random(100, p.windowWidth - 100),
-      p.random(100, p.windowHeight - 100),
-      100
-    ),
-    new Heart(
-      p.random(100, p.windowWidth - 100),
-      p.random(100, p.windowHeight - 100),
-      100
-    ),
-    new Star(
-      p.random(100, p.windowWidth - 100),
-      p.random(100, p.windowHeight - 100),
-      100
-    ),
-  ];
+  function reset() {
+    const size = p.min(p.windowWidth, p.windowHeight) / 6;
+    shapes = [Circle, Triangle, Heart, Star].map((cls) => {
+      let [x, y] = [
+        p.random(size, p.windowWidth - size),
+        p.random(size, p.windowHeight - size),
+      ];
+      while (
+        p.sqrt(
+          (x - p.windowWidth / 2) * (x - p.windowWidth / 2) +
+            (y - p.windowHeight / 2) * (y - p.windowHeight / 2)
+        ) <
+        size * 2
+      ) {
+        x = p.random(size, p.windowWidth - size);
+        y = p.random(size, p.windowHeight - size);
+      }
+      return new cls(x, y, size);
+    });
+  }
+
+  let shapes: Shape[] = [];
   let dragIndex = -1;
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
+    reset();
   };
   p.draw = () => {
     const context = p.drawingContext as CanvasRenderingContext2D;
@@ -182,14 +176,15 @@ const sketch = (p: p5) => {
       shape.isHit(p.mouseX, p.mouseY)
     );
   };
-  p.touchEnded = () => {
-    console.log("touchEnded");
-  };
   p.touchMoved = () => {
     if (dragIndex !== -1) {
       shapes[dragIndex].move(p.mouseX, p.mouseY);
     }
     return false;
+  };
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+    reset();
   };
 };
 
