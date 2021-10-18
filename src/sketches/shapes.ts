@@ -18,8 +18,12 @@ const sketch = (p: p5) => {
       this.x = x;
       this.y = y;
     }
+    public setColor(color: Color) {
+      this.color = color;
+    }
     public abstract draw(): void;
     public abstract isHit(x: number, y: number): boolean;
+    public abstract isSameShape(shape: Shape): boolean;
   }
 
   class Circle extends Shape {
@@ -35,6 +39,9 @@ const sketch = (p: p5) => {
         p.sqrt((this.x - x) * (this.x - x) + (this.y - y) * (this.y - y)) <=
         this.size / 2
       );
+    }
+    public isSameShape(shape: Shape): boolean {
+      return shape instanceof Circle;
     }
   }
   class Triangle extends Shape {
@@ -60,6 +67,9 @@ const sketch = (p: p5) => {
         y <= this.y + this.size / 3 &&
         y >= this.y + this.size / 3 - (this.size / sqrt3 - dx) * sqrt3
       );
+    }
+    public isSameShape(shape: Shape): boolean {
+      return shape instanceof Triangle;
     }
   }
   class Heart extends Shape {
@@ -93,6 +103,9 @@ const sketch = (p: p5) => {
         p.abs(x - this.x) <= this.size / 2 &&
         p.abs(y - this.y + this.size / 6) <= this.size / 2
       );
+    }
+    public isSameShape(shape: Shape): boolean {
+      return shape instanceof Heart;
     }
   }
   class Star extends Shape {
@@ -128,11 +141,21 @@ const sketch = (p: p5) => {
         this.size / 1.2
       );
     }
+    public isSameShape(shape: Shape): boolean {
+      return shape instanceof Star;
+    }
   }
 
   function reset() {
     const size = p.min(p.windowWidth, p.windowHeight) / 6;
-    shapes = [Circle, Triangle, Heart, Star].map((cls) => {
+    const classes = [Circle, Triangle, Heart, Star];
+    target = new classes[p.floor(p.random(4))](
+      p.windowWidth / 2,
+      p.windowHeight / 2,
+      size + 10
+    );
+    target.setColor(p.colorMode(p.RGB).color(0, 0, 0));
+    shapes = classes.map((cls) => {
       let [x, y] = [
         p.random(size, p.windowWidth - size),
         p.random(size, p.windowHeight - size),
@@ -151,20 +174,22 @@ const sketch = (p: p5) => {
     });
   }
 
+  let target: Shape;
   let shapes: Shape[] = [];
   let dragIndex = -1;
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
+    const context = p.drawingContext as CanvasRenderingContext2D;
+    context.shadowOffsetX = 3;
+    context.shadowOffsetY = 3;
+    context.shadowBlur = 10;
+    context.shadowColor = "black";
     reset();
   };
   p.draw = () => {
-    const context = p.drawingContext as CanvasRenderingContext2D;
-    context.shadowOffsetX = 5;
-    context.shadowOffsetY = 5;
-    context.shadowBlur = 10;
-    context.shadowColor = "black";
     p.background(p.colorMode(p.RGB).color(0x80, 0x80, 0x80));
+    target.draw();
     p.strokeWeight(2);
     shapes
       .slice()
@@ -179,6 +204,19 @@ const sketch = (p: p5) => {
   p.touchMoved = () => {
     if (dragIndex !== -1) {
       shapes[dragIndex].move(p.mouseX, p.mouseY);
+
+      if (shapes[dragIndex].isSameShape(target)) {
+        const dx = p.mouseX - p.windowWidth / 2;
+        const dy = p.mouseY - p.windowHeight / 2;
+        if (dx * dx + dy * dy < 100) {
+          shapes[dragIndex].move(p.windowWidth / 2, p.windowHeight / 2);
+          dragIndex = -1;
+          // TODO
+          window.setTimeout(() => {
+            reset();
+          }, 1000);
+        }
+      }
     }
     return false;
   };
