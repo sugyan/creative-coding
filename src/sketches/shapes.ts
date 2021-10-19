@@ -146,6 +146,41 @@ const sketch = (p: p5) => {
     }
   }
 
+  class Effect {
+    private readonly created: number;
+    private readonly size: number;
+    private readonly lines: [number, number][];
+    public constructor() {
+      this.created = p.millis();
+      this.size = p.min(p.windowWidth, p.windowHeight) / 3.5;
+      this.lines = [];
+      const base = p.TWO_PI / p.random(80, 100);
+      let angle = 0.0;
+      while (angle < p.TWO_PI) {
+        angle += base * (p.sin(this.lines.length / 1.2) + 1.0);
+        this.lines.push([angle, (p.random() * this.size) / 2]);
+      }
+    }
+    public draw() {
+      const length = p.max(p.windowWidth, p.windowHeight);
+      p.noStroke();
+      p.fill(p.colorMode(p.RGB).color(0xff, 0xff, 0xff));
+      p.push();
+      p.translate(p.windowWidth / 2, p.windowHeight / 2);
+      this.lines.forEach((v) => {
+        p.push();
+        p.rotate(v[0]);
+        p.translate(0, v[1]);
+        p.triangle(0, this.size, -length / 200, length, length / 200, length);
+        p.pop();
+      });
+      p.pop();
+    }
+    public isLive(): boolean {
+      return p.millis() - this.created < 2500;
+    }
+  }
+
   function reset() {
     const size = p.min(p.windowWidth, p.windowHeight) / 6;
     const classes = [Circle, Triangle, Heart, Star];
@@ -172,31 +207,40 @@ const sketch = (p: p5) => {
       }
       return new cls(x, y, size);
     });
+    effects = [];
   }
 
   let target: Shape;
   let shapes: Shape[] = [];
   let dragIndex = -1;
+  let effects: Effect[] = [];
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
-    const context = p.drawingContext as CanvasRenderingContext2D;
-    context.shadowOffsetX = 3;
-    context.shadowOffsetY = 3;
-    context.shadowBlur = 10;
-    context.shadowColor = "black";
     reset();
   };
   p.draw = () => {
-    p.background(p.colorMode(p.RGB).color(0x80, 0x80, 0x80));
+    p.colorMode(p.RGB);
+    p.background(0x80, 0x80, 0x80);
+    p.stroke(0x00, 0x00, 0x00);
+    p.strokeWeight(3);
     target.draw();
-    p.strokeWeight(2);
     shapes
       .slice()
       .reverse()
       .forEach((shape) => shape.draw());
+    if (effects.length > 0) {
+      if (effects.every((e: Effect) => e.isLive())) {
+        effects[p.floor(p.millis() / 500) % effects.length].draw();
+      } else {
+        reset();
+      }
+    }
   };
   p.touchStarted = () => {
+    if (effects.length > 0) {
+      return;
+    }
     dragIndex = shapes.findIndex((shape: Shape) =>
       shape.isHit(p.mouseX, p.mouseY)
     );
@@ -211,10 +255,7 @@ const sketch = (p: p5) => {
         if (dx * dx + dy * dy < 100) {
           shapes[dragIndex].move(p.windowWidth / 2, p.windowHeight / 2);
           dragIndex = -1;
-          // TODO
-          window.setTimeout(() => {
-            reset();
-          }, 1000);
+          effects = [new Effect(), new Effect()];
         }
       }
     }
