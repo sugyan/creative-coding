@@ -33,9 +33,9 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.grid}>
-          <Link href="/sketches/shapes">
+          <Link href="/sketches/gasshan">
             <a className={styles.card} style={{ width: 250 }}>
-              <h2>Shapes</h2>
+              <h2>Gasshan</h2>
             </a>
           </Link>
         </div>
