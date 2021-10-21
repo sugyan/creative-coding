@@ -49,6 +49,9 @@ const sketch = (p: p5) => {
     resize();
     p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
+  p.touchMoved = () => {
+    return false;
+  };
 };
 
 export default sketch;
