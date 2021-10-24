@@ -13,31 +13,34 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.grid}>
-          <Link href="/sketches/ghost-drawing">
-            <a className={styles.card} style={{ width: 250 }}>
-              <h2>Ghost drawing</h2>
-            </a>
-          </Link>
-        </div>
-      </main>
-
-      <main className={styles.main}>
-        <div className={styles.grid}>
-          <Link href="/sketches/bubbles">
-            <a className={styles.card} style={{ width: 250 }}>
-              <h2>Bubbles</h2>
-            </a>
-          </Link>
-        </div>
-      </main>
-
-      <main className={styles.main}>
-        <div className={styles.grid}>
-          <Link href="/sketches/gasshan">
-            <a className={styles.card} style={{ width: 250 }}>
-              <h2>Gasshan</h2>
-            </a>
-          </Link>
+          <div className={styles.card}>
+            <Link href="/sketches/ghost-drawing">
+              <a>
+                <h2>Ghost drawing</h2>
+              </a>
+            </Link>
+          </div>
+          <div className={styles.card}>
+            <Link href="/sketches/bubbles">
+              <a>
+                <h2>Bubbles</h2>
+              </a>
+            </Link>
+          </div>
+          <div className={styles.card}>
+            <Link href="/sketches/gasshan">
+              <a>
+                <h2>Gasshan</h2>
+              </a>
+            </Link>
+          </div>
+          <div className={styles.card}>
+            <Link href="/sketches/hexagonal-gameoflife">
+              <a>
+                <h2>Hexagonal Game-of-Life</h2>
+              </a>
+            </Link>
+          </div>
         </div>
       </main>
     </div>
