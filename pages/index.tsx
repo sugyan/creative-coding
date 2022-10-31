@@ -13,26 +13,18 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.grid}>
-          <div className={styles.card}>
-            <Link href="/sketches/ghost-drawing">
-              <h2>Ghost drawing</h2>
-            </Link>
-          </div>
-          <div className={styles.card}>
-            <Link href="/sketches/bubbles">
-              <h2>Bubbles</h2>
-            </Link>
-          </div>
-          <div className={styles.card}>
-            <Link href="/sketches/gasshan">
-              <h2>Gasshan</h2>
-            </Link>
-          </div>
-          <div className={styles.card}>
-            <Link href="/sketches/hexagonal-gameoflife">
-              <h2>Hexagonal Game-of-Life</h2>
-            </Link>
-          </div>
+          <Link href="/sketches/ghost-drawing" className={styles.card}>
+            <h2>Ghost drawing</h2>
+          </Link>
+          <Link href="/sketches/bubbles" className={styles.card}>
+            <h2>Bubbles</h2>
+          </Link>
+          <Link href="/sketches/gasshan" className={styles.card}>
+            <h2>Gasshan</h2>
+          </Link>
+          <Link href="/sketches/hexagonal-gameoflife" className={styles.card}>
+            <h2>Hexagonal Game-of-Life</h2>
+          </Link>
         </div>
       </main>
     </div>
