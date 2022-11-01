@@ -13,7 +13,11 @@ const sketch = (p: p5) => {
     public draw() {
       p.fill(255, 255, 255);
       p.textFont("monospace");
-      p.text(`${this.num}`, this.x, this.y);
+      p.text(
+        `${this.num}`,
+        this.x + p.noise(this.x + p.millis() / 500) * 10,
+        this.y + p.noise(this.y + p.millis() / 500) * 10
+      );
     }
     public isHit(
       [x, y]: [number, number],
