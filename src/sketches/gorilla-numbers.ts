@@ -9,9 +9,18 @@ interface Bound {
 
 const sketch = (p: p5) => {
   class State {
-    readonly target: number;
+    private _target: number;
     public constructor() {
-      this.target = 0;
+      this._target = 0;
+    }
+    public get target() {
+      return this._target;
+    }
+    public nextTarget() {
+      this._target++;
+    }
+    public reset() {
+      this._target = 0;
     }
   }
   class Digit {
@@ -19,6 +28,7 @@ const sketch = (p: p5) => {
     readonly x: number;
     readonly y: number;
     readonly bound: Bound;
+    private deleted = false;
     public constructor(
       num: number,
       xy: [number, number],
@@ -38,6 +48,9 @@ const sketch = (p: p5) => {
       };
     }
     public draw() {
+      if (this.deleted) {
+        return;
+      }
       p.fill(255, 255, 255);
       p.noStroke();
       p.text(`${this.num}`, this.x, this.y);
@@ -51,6 +64,9 @@ const sketch = (p: p5) => {
         this.bound.t - h * scale < y &&
         y < this.bound.b + h * scale
       );
+    }
+    public delete() {
+      this.deleted = true;
     }
   }
   function reset() {
@@ -101,7 +117,14 @@ const sketch = (p: p5) => {
   p.mouseClicked = () => {
     digits.forEach((d) => {
       if (d.isHit([p.mouseX, p.mouseY], 0.1)) {
-        console.log(d.num);
+        if (d.num === state.target) {
+          d.delete();
+          state.nextTarget();
+          if (state.target > 9) {
+            reset();
+            state.reset();
+          }
+        }
       }
     });
   };

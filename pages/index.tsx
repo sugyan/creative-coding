@@ -25,6 +25,9 @@ export default function Home() {
           <Link href="/sketches/hexagonal-gameoflife" className={styles.card}>
             <h2>Hexagonal Game-of-Life</h2>
           </Link>
+          <Link href="/sketches/gorilla-numbers" className={styles.card}>
+            <h2>Gorilla numbers</h2>
+          </Link>
         </div>
       </main>
     </div>
