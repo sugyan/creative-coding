@@ -98,6 +98,7 @@ const sketch = (p: p5) => {
         }
       }
     });
+    state.reset();
   }
   const state = new State();
   const digits: Digit[] = [];
@@ -114,19 +115,25 @@ const sketch = (p: p5) => {
     p.background(0, 0, 0);
     digits.forEach((digit) => digit.draw());
   };
-  p.mouseClicked = () => {
+  p.touchMoved = () => {
+    return false;
+  };
+  p.mouseClicked = p.touchEnded = () => {
     digits.forEach((d) => {
-      if (d.isHit([p.mouseX, p.mouseY], 0.1)) {
+      if (d.isHit([p.mouseX, p.mouseY], 0.2)) {
         if (d.num === state.target) {
           d.delete();
           state.nextTarget();
           if (state.target > 9) {
             reset();
-            state.reset();
           }
         }
       }
     });
+    p.windowResized = () => {
+      p.resizeCanvas(p.windowWidth, p.windowHeight);
+      reset();
+    };
   };
 };
 
