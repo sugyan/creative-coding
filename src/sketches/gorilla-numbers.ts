@@ -34,6 +34,7 @@ const sketch = (p: p5) => {
     p.textSize(textSize);
     digits.splice(0, digits.length);
     [...Array(10).keys()].forEach((num) => {
+      console.log(`num: ${num}, font: ${font}`);
       const bbox = font.textBounds(`${num}`, 0, 0, textSize);
       const [bw, bh] = [bbox["w"], bbox["h"]];
       while (true) {
@@ -51,9 +52,11 @@ const sketch = (p: p5) => {
   let font: p5.Font;
   const digits = [];
   p.preload = () => {
+    console.log("preload");
     font = p.loadFont("/assets/fonts/Courier New.ttf");
   };
   p.setup = () => {
+    console.log("setup");
     p.createCanvas(p.windowWidth, p.windowHeight);
     reset();
   };
