@@ -30,7 +30,7 @@ const sketch = (p: p5) => {
     readonly x: number;
     readonly y: number;
     readonly bound: Bound;
-    private deleted = false;
+    private _isDeleted = false;
     public constructor(
       num: number,
       xy: [number, number],
@@ -50,7 +50,7 @@ const sketch = (p: p5) => {
       };
     }
     public draw() {
-      if (this.deleted) {
+      if (this._isDeleted) {
         return;
       }
       p.fill(255, 255, 255);
@@ -68,7 +68,10 @@ const sketch = (p: p5) => {
       );
     }
     public delete() {
-      this.deleted = true;
+      this._isDeleted = true;
+    }
+    public get isDeleted(): boolean {
+      return this._isDeleted;
     }
   }
   function reset() {
@@ -126,10 +129,8 @@ const sketch = (p: p5) => {
   };
   p.touchEnded = () => {
     digits
-      .filter((d) => d.isHit([p.mouseX, p.mouseY], 0.2))
+      .filter((d) => !d.isDeleted && d.isHit([p.mouseX, p.mouseY], 0.2))
       .forEach((d) => {
-        console.log(d);
-
         if (d.num === state.target) {
           ok.play(0, 1, 0.5);
           d.delete();
