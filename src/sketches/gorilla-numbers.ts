@@ -1,3 +1,5 @@
+import "./globals";
+import "p5/lib/addons/p5.sound";
 import p5 from "p5";
 
 interface Bound {
@@ -75,6 +77,7 @@ const sketch = (p: p5) => {
     const textSize = l / 8.0;
     const bbox = font.textBounds(" 0123456789 ", 0, 0, textSize);
     const [bw, bh] = [bbox["w"] / 12.0, bbox["h"]];
+    p.textFont(font);
     p.textSize(textSize);
     digits.splice(0, digits.length);
     [...Array(10).keys()].forEach((num) => {
@@ -103,12 +106,15 @@ const sketch = (p: p5) => {
   const state = new State();
   const digits: Digit[] = [];
   let font: p5.Font;
+  let ok: p5.SoundFile;
+  let ng: p5.SoundFile;
   p.preload = () => {
     font = p.loadFont("/assets/fonts/Courier New.ttf");
+    ok = p.loadSound("/assets/sounds/ok.mp3");
+    ng = p.loadSound("/assets/sounds/ng.mp3");
   };
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
-    p.textFont(font);
     reset();
   };
   p.draw = () => {
@@ -118,22 +124,27 @@ const sketch = (p: p5) => {
   p.touchMoved = () => {
     return false;
   };
-  p.mouseClicked = p.touchEnded = () => {
-    digits.forEach((d) => {
-      if (d.isHit([p.mouseX, p.mouseY], 0.2)) {
+  p.touchEnded = () => {
+    digits
+      .filter((d) => d.isHit([p.mouseX, p.mouseY], 0.2))
+      .forEach((d) => {
+        console.log(d);
+
         if (d.num === state.target) {
+          ok.play(0, 1, 0.5);
           d.delete();
           state.nextTarget();
           if (state.target > 9) {
             reset();
           }
+        } else {
+          ng.play(0, 1, 0.5);
         }
-      }
-    });
-    p.windowResized = () => {
-      p.resizeCanvas(p.windowWidth, p.windowHeight);
-      reset();
-    };
+      });
+  };
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+    reset();
   };
 };
 
